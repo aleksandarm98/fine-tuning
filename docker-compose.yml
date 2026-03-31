@@ -1,0 +1,35 @@
+services:
+  # CPU mode (dry_run: true u config.yaml)
+  finetune-cpu:
+    build: .
+    profiles: ["cpu"]
+    env_file: .env
+    volumes:
+      - hf_cache:/cache/huggingface
+      - ./output:/app/output
+      - ./config.yaml:/app/config.yaml
+    command: ["python", "scripts/run_pipeline.py"]
+
+  # GPU mode (dry_run: false, treba NVIDIA GPU)
+  finetune-gpu:
+    build: .
+    profiles: ["gpu"]
+    env_file: .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - hf_cache:/cache/huggingface
+      - ./output:/app/output
+      - ./config.yaml:/app/config.yaml
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    command: ["python", "scripts/run_pipeline.py"]
+
+volumes:
+  hf_cache:

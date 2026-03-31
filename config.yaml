@@ -1,0 +1,96 @@
+# =============================================================================
+# DMS Fine-Tuning Configuration
+# =============================================================================
+# Fine-tuning Mistral-7B-Instruct za rešavanje matematičkih zadataka
+# sa takmičenja Društva Matematičara Srbije (DMS).
+#
+# Pokretanje: docker compose up --build
+# Ili direktno: python scripts/run_pipeline.py
+# =============================================================================
+
+# -- Dry run mode ------------------------------------------------
+# true = trenira 2 koraka na 4 primera (CPU, ~2 min)
+# Koristiti za verifikaciju da pipeline radi pre pokretanja na GPU.
+dry_run: false
+
+# -- Model -------------------------------------------------------
+model:
+  name: "mistralai/Mistral-7B-Instruct-v0.3"
+
+# -- Dataset split (Option 2) ------------------------------------
+# Train: ceo 2022 (116) + 2023 bez okružnog (76) = 192
+# Val:   okružno 2023 = 40 (prirodan srednji nivo težine)
+# Test:  ceo 2024 (116) — NIKAD se ne koristi za trening
+dataset:
+  raw_dir: "data/raw"
+  splits_dir: "data/splits"
+
+  train_files:
+    # 2022 (116 zadataka)
+    - "Drzavno_A__2022_dataset.json"
+    - "Drzavno_B__2022_dataset.json"
+    - "Okruzno__2022_dataset.json"
+    - "Opstinsko__2022_dataset.json"
+    # 2023 bez okružnog (76 zadataka)
+    - "Drzavno_A__2023_dataset.json"
+    - "Drzavno_B__2023_dataset.json"
+    - "Opstinsko__2023_dataset.json"
+
+  val_files:
+    - "Okruzno_2023__dataset.json"
+
+  test_files:
+    - "DrzavnoA2024_dataset.json"
+    - "DrzavnoB2024_dataset.json"
+    - "OkruznoAB2024_dataset.json"
+    - "OpstinskoAB2024_dataset.json"
+
+# -- QLoRA parameters -------------------------------------------
+qlora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+# -- Training hyperparameters -----------------------------------
+training:
+  num_epochs: 5
+  batch_size: 2
+  gradient_accumulation_steps: 8    # effective batch = 16
+  learning_rate: 2.0e-4
+  lr_scheduler: "cosine"
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_seq_length: 2048
+  early_stopping_patience: 3
+  seed: 42
+
+# -- Generation (inference) -------------------------------------
+generation:
+  max_new_tokens: 1024
+  temperature: 0.1
+  top_p: 0.95
+  repetition_penalty: 1.1
+
+# -- Evaluation (multi-judge via AWS Bedrock) --------------------
+evaluation:
+  judge_model: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+  aws_region: "us-east-1"
+  aws_profile: "finetune"   # AWS CLI profil sa Bedrock pristupom
+  weights:
+    factual: 0.30            # Judge A: tačnost konačnog odgovora
+    logic: 0.40              # Judge B: logička koherentnost
+    quality: 0.30            # Judge C: kvalitet objašnjenja
+
+# -- Output paths ------------------------------------------------
+output:
+  checkpoints_dir: "output/checkpoints"
+  model_dir: "output/model"
+  results_dir: "output/results"

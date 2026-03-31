@@ -1,0 +1,29 @@
+# Output (generated during training)
+output/
+data/splits/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Old scripts (replaced by scripts/)
+01_*.py
+02_*.py
+03_*.py
+04_*.py
+05_*.py
+config.py

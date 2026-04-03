@@ -1,8 +1,13 @@
 services:
-  # CPU mode (dry_run: true u config.yaml)
-  finetune-cpu:
-    build: .
-    profiles: ["cpu"]
+  # Dry run — provera pipeline-a bez GPU (radi na Mac/Linux)
+  # Zahteva: dry_run: true u config.yaml
+  dry-run:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: python:3.11-slim
+        REQUIREMENTS: requirements-cpu.txt
+    profiles: ["dry-run"]
     env_file: .env
     volumes:
       - hf_cache:/cache/huggingface
@@ -10,10 +15,12 @@ services:
       - ./config.yaml:/app/config.yaml
     command: ["python", "scripts/run_pipeline.py"]
 
-  # GPU mode (dry_run: false, treba NVIDIA GPU)
-  finetune-gpu:
-    build: .
-    profiles: ["gpu"]
+  # Pravi trening na GPU serveru
+  # Zahteva: dry_run: false u config.yaml, NVIDIA GPU >= 16GB
+  train:
+    build:
+      context: .
+    profiles: ["train"]
     env_file: .env
     deploy:
       resources:

@@ -1,9 +1,8 @@
 # =============================================================================
-# Iteracija 8A: rank 16, samo attention moduli (q/k/v/o), lr 2e-4
+# Iteracija 8C: konzervativna — rank 8, samo q/v, lr 1e-4
 # =============================================================================
-# Ideja: pun kapacitet za učenje (rank 16) ali bez MLP modula
-# koji čuvaju matematičko znanje. NIJE probano u prethodnih 7 iteracija.
-# Iteracije 3-4 su imale rank 8 i underfit-ovale - ovde imamo rank 16.
+# Ideja: minimalan fine-tuning, samo naučiti format/srpski.
+# Rizik: može underfit-ovati kao iter 3-4, ali LR je duplo viši od iter 3.
 
 dry_run: false
 
@@ -30,20 +29,18 @@ dataset:
     - "OpstinskoAB2024_dataset.json"
 
 qlora:
-  rank: 16
-  alpha: 32
+  rank: 8
+  alpha: 16
   dropout: 0.10
   target_modules:
     - "q_proj"
-    - "k_proj"
     - "v_proj"
-    - "o_proj"
 
 training:
   num_epochs: 3
   batch_size: 2
   gradient_accumulation_steps: 16
-  learning_rate: 2.0e-4
+  learning_rate: 1.0e-4
   lr_scheduler: "cosine"
   warmup_ratio: 0.10
   weight_decay: 0.05

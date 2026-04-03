@@ -128,7 +128,7 @@ def run():
     max_steps = 2 if DRY_RUN else -1
     batch_size = 1 if DRY_RUN else TRAINING["batch_size"]
     grad_accum = 1 if DRY_RUN else TRAINING["gradient_accumulation_steps"]
-    eval_steps = 1 if DRY_RUN else 20
+    eval_steps = 1 if DRY_RUN else TRAINING.get("eval_steps", 10)
     seq_len = 512 if DRY_RUN else TRAINING["max_seq_length"]
 
     training_args = SFTConfig(

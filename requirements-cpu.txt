@@ -1,0 +1,13 @@
+# CPU/dry-run dependencies (bez bitsandbytes koji zahteva CUDA)
+torch==2.4.1
+transformers==4.46.0
+datasets==3.0.0
+accelerate==0.34.0
+peft==0.13.0
+trl==0.17.0
+boto3==1.35.0
+numpy==1.26.0
+sentencepiece
+protobuf
+Pillow>=9.1.0
+jinja2==3.1.6

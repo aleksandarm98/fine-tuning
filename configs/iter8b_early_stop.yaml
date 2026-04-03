@@ -1,9 +1,9 @@
 # =============================================================================
-# Iteracija 8A: rank 16, samo attention moduli (q/k/v/o), lr 2e-4
+# Iteracija 8B: isti kao iter 7 ali sa agresivnijim early stopping
 # =============================================================================
-# Ideja: pun kapacitet za učenje (rank 16) ali bez MLP modula
-# koji čuvaju matematičko znanje. NIJE probano u prethodnih 7 iteracija.
-# Iteracije 3-4 su imale rank 8 i underfit-ovale - ovde imamo rank 16.
+# Ideja: iter 1 je imala best eval loss na epohi 1.67. Možda model treba
+# uhvatiti ranije pre nego počne catastrophic forgetting.
+# Eval svakih 2 koraka, patience 1 = zaustavi čim eval loss poraste.
 
 dry_run: false
 
@@ -38,6 +38,9 @@ qlora:
     - "k_proj"
     - "v_proj"
     - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
 
 training:
   num_epochs: 3
@@ -48,8 +51,8 @@ training:
   warmup_ratio: 0.10
   weight_decay: 0.05
   max_seq_length: 2048
-  early_stopping_patience: 2
-  eval_steps: 5
+  early_stopping_patience: 1       # agresivnije - zaustavi odmah
+  eval_steps: 2                    # češća evaluacija
   seed: 42
 
 generation:

@@ -1,4 +1,5 @@
-FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
+ARG BASE_IMAGE=pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
+FROM ${BASE_IMAGE}
 
 WORKDIR /app
 
@@ -8,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements-cpu.txt ./
+ARG REQUIREMENTS=requirements.txt
+RUN pip install --no-cache-dir -r ${REQUIREMENTS}
 
 # Copy project
 COPY config.yaml .

@@ -10,7 +10,7 @@ from collections import defaultdict
 from config_loader import (
     RAW_DATA_DIR, SPLITS_DIR,
     TRAIN_FILES, VAL_FILES, TEST_FILES,
-    SYSTEM_PROMPT, DRY_RUN,
+    SYSTEM_PROMPT, DRY_RUN, IS_INSTRUCT_MODEL,
 )
 
 
@@ -48,20 +48,34 @@ def build_user_prompt(task: dict) -> str:
     )
 
 
-def task_to_chat(task: dict) -> dict:
+def task_to_training_format(task: dict) -> dict:
     solution = task.get("resenje", "") or task.get("completion", "")
-    return {
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(task)},
-            {"role": "assistant", "content": solution},
-        ],
+    meta = {
         "id": task.get("id", ""),
         "oblast": task.get("oblast", ""),
         "nivo": task.get("nivo", ""),
         "kategorija": task.get("kategorija", ""),
         "razred": task.get("razred", ""),
     }
+
+    if IS_INSTRUCT_MODEL:
+        # Instruct modeli: chat messages format za SFTTrainer
+        return {
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": build_user_prompt(task)},
+                {"role": "assistant", "content": solution},
+            ],
+            **meta,
+        }
+    else:
+        # Base modeli (Mathstral, itd.): plain text format
+        text = (
+            f"{SYSTEM_PROMPT}\n\n"
+            f"{build_user_prompt(task)}\n\n"
+            f"Rešenje:\n{solution}"
+        )
+        return {"text": text, **meta}
 
 
 def save_jsonl(records: list[dict], path: Path):
@@ -109,9 +123,9 @@ def run():
 
     # Convert and save
     print("\nSaving splits...")
-    save_jsonl([task_to_chat(t) for t in train], SPLITS_DIR / "train.jsonl")
-    save_jsonl([task_to_chat(t) for t in val], SPLITS_DIR / "val.jsonl")
-    save_jsonl([task_to_chat(t) for t in test], SPLITS_DIR / "test.jsonl")
+    save_jsonl([task_to_training_format(t) for t in train], SPLITS_DIR / "train.jsonl")
+    save_jsonl([task_to_training_format(t) for t in val], SPLITS_DIR / "val.jsonl")
+    save_jsonl([task_to_training_format(t) for t in test], SPLITS_DIR / "test.jsonl")
 
     # Raw copies (for evaluation)
     save_jsonl(train, SPLITS_DIR / "train_raw.jsonl")

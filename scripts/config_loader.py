@@ -25,6 +25,9 @@ DRY_RUN: bool = _cfg.get("dry_run", False)
 # -- Model -------------------------------------------------------
 BASE_MODEL_ID: str = _cfg["model"]["name"]
 
+# Da li model ima chat/instruct template (Mistral Instruct ima, Mathstral nema)
+IS_INSTRUCT_MODEL: bool = "instruct" in BASE_MODEL_ID.lower()
+
 # Dry run: tiny model (~few MB) umesto 14GB Mistral-a.
 # Tokenizer ostaje Mistral-ov (mali, ~par MB) za chat template kompatibilnost.
 if DRY_RUN:

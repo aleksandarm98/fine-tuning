@@ -28,10 +28,10 @@ docker compose --profile train up --build
 
 ## Izbor konfiguracije
 
-Postoje 3 varijante. Kopiraj željenu u `config.yaml`:
+Postoje 4 varijante. Kopiraj željenu u `config.yaml`:
 
 ```bash
-# Varijanta A — rank 16, samo attention moduli (PREPORUČENO)
+# Varijanta A — rank 16, samo attention moduli
 cp configs/iter8a_attention_rank16.yaml config.yaml
 
 # Varijanta B — isti kao iter 7, agresivniji early stopping
@@ -39,13 +39,19 @@ cp configs/iter8b_early_stop.yaml config.yaml
 
 # Varijanta C — konzervativna, rank 8, samo q/v
 cp configs/iter8c_conservative.yaml config.yaml
+
+# Varijanta D — Mathstral-7B (math-specijalizovan base model)
+cp configs/iter9_mathstral.yaml config.yaml
 ```
 
-| Varijanta | rank | Moduli | LR | Opis |
-|:---------:|:----:|:------:|:--:|:-----|
-| A | 16 | q/k/v/o | 2e-4 | Pun kapacitet, zaštićen MLP |
-| B | 16 | svih 7 | 2e-4 | Isti kao iter 7, ranije zaustavljanje |
-| C | 8 | q/v | 1e-4 | Minimalan fine-tuning |
+| Varijanta | Model | rank | Moduli | LR | Opis |
+|:---------:|:-----:|:----:|:------:|:--:|:-----|
+| A | Mistral Instruct | 16 | q/k/v/o | 2e-4 | Pun kapacitet, zaštićen MLP |
+| B | Mistral Instruct | 16 | svih 7 | 2e-4 | Isti kao iter 7, ranije zaustavljanje |
+| C | Mistral Instruct | 8 | q/v | 1e-4 | Minimalan fine-tuning |
+| D | **Mathstral** | 8 | q/v | 5e-5 | Math base model, konzervativni QLoRA |
+
+**Napomena**: Varijanta D koristi Mathstral-7B-v0.1 koji NIJE instruct model. Pipeline automatski detektuje tip modela i koristi odgovarajući prompt format (chat template za Instruct, raw prompt za base modele).
 
 Kontejner čita `config.yaml` kroz volume mount — ne treba rebuild.
 

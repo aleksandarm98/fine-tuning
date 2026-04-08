@@ -20,7 +20,7 @@ from peft import PeftModel
 from config_loader import (
     BASE_MODEL_ID, DRY_RUN_MODEL_ID, TOKENIZER_ID,
     MODEL_DIR, SPLITS_DIR, RESULTS_DIR,
-    SYSTEM_PROMPT, GENERATION, DRY_RUN,
+    SYSTEM_PROMPT, GENERATION, DRY_RUN, IS_INSTRUCT_MODEL,
 )
 
 
@@ -104,12 +104,17 @@ def load_model(model_type: str, tokenizer):
 
 
 def generate_solution(model, tokenizer, task: dict) -> str:
-    messages = [
-        {"role": "user", "content": f"{SYSTEM_PROMPT}\n\n{build_user_prompt(task)}"},
-    ]
-    prompt = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True,
-    )
+    if IS_INSTRUCT_MODEL:
+        # Mistral Instruct: koristi [INST]...[/INST] chat template
+        messages = [
+            {"role": "user", "content": f"{SYSTEM_PROMPT}\n\n{build_user_prompt(task)}"},
+        ]
+        prompt = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True,
+        )
+    else:
+        # Base modeli (Mathstral, itd.): raw prompt bez chat template-a
+        prompt = f"{SYSTEM_PROMPT}\n\n{build_user_prompt(task)}\n\nRešenje:\n"
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048)
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
 

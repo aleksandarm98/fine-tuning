@@ -1,16 +1,9 @@
 # =============================================================================
-# Iteracija 9: Mathstral-7B-v0.1 fine-tuning
+# Iteracija 8B: isti kao iter 7 ali sa agresivnijim early stopping
 # =============================================================================
-# Ideja: Mathstral ima jače matematičko znanje od Mistral Instruct-a.
-# Fine-tuning samo za format/jezik (srpski, LaTeX, struktura) sa minimalnim
-# uticajem na matematičke sposobnosti.
-#
-# PAŽNJA: Mathstral NIJE instruct model — nema chat template.
-# inference.py mora da koristi raw prompt umesto apply_chat_template().
-#
-# Konzervativni parametri: rank 8, samo q/v, nizak LR.
-# Custom config dao najbolje rezultate za Mistral — ali Mathstral možda
-# treba još manje agresivan pristup jer polazi sa boljom bazom.
+# Ideja: iter 1 je imala best eval loss na epohi 1.67. Možda model treba
+# uhvatiti ranije pre nego počne catastrophic forgetting.
+# Eval svakih 2 koraka, patience 1 = zaustavi čim eval loss poraste.
 
 dry_run: false
 
@@ -37,24 +30,29 @@ dataset:
     - "OpstinskoAB2024_dataset.json"
 
 qlora:
-  rank: 8
-  alpha: 16
-  dropout: 0.05
+  rank: 16
+  alpha: 32
+  dropout: 0.10
   target_modules:
     - "q_proj"
+    - "k_proj"
     - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
 
 training:
   num_epochs: 3
   batch_size: 2
-  gradient_accumulation_steps: 16   # effective batch = 32
-  learning_rate: 5.0e-5
+  gradient_accumulation_steps: 16
+  learning_rate: 2.0e-4
   lr_scheduler: "cosine"
   warmup_ratio: 0.10
-  weight_decay: 0.01
+  weight_decay: 0.05
   max_seq_length: 2048
-  early_stopping_patience: 2
-  eval_steps: 3
+  early_stopping_patience: 1       # agresivnije - zaustavi odmah
+  eval_steps: 2                    # češća evaluacija
   seed: 42
 
 generation:
@@ -68,8 +66,8 @@ evaluation:
   aws_region: "us-east-1"
   aws_profile: "finetune"
   weights:
-    factual: 0.40
-    logic: 0.30
+    factual: 0.30
+    logic: 0.40
     quality: 0.30
 
 output:

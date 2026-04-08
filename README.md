@@ -72,11 +72,12 @@ Zahteva: NVIDIA GPU ≥ 16 GB VRAM, `nvidia-container-toolkit`.
 
 Sve konfiguracije su u `configs/` direktorijumu. Aktivna je uvek `config.yaml`.
 
-| Config fajl | Opis | rank | Moduli | LR |
-|:------------|:-----|:----:|:------:|:--:|
-| `iter8a_attention_rank16.yaml` | Pun kapacitet, zaštićen MLP | 16 | q/k/v/o | 2e-4 |
-| `iter8b_early_stop.yaml` | Isti kao iter 7, ranije zaustavljanje | 16 | svih 7 | 2e-4 |
-| `iter8c_conservative.yaml` | Minimalan fine-tuning | 8 | q/v | 1e-4 |
+| Config fajl | Model | Opis | rank | Moduli | LR |
+|:------------|:------|:-----|:----:|:------:|:--:|
+| `iter8a_attention_rank16.yaml` | Mistral Instruct | Pun kapacitet, zaštićen MLP | 16 | q/k/v/o | 2e-4 |
+| `iter8b_early_stop.yaml` | Mistral Instruct | Isti kao iter 7, ranije zaustavljanje | 16 | svih 7 | 2e-4 |
+| `iter8c_conservative.yaml` | Mistral Instruct | Minimalan fine-tuning | 8 | q/v | 1e-4 |
+| `iter9_mathstral.yaml` | **Mathstral-7B** | Math base model, konzervativni QLoRA | 8 | q/v | 5e-5 |
 
 ### Prethodne iteracije (referenca)
 
